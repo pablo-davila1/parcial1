@@ -18,6 +18,10 @@ public:
     bool login();
     int see_combos();
     map<string,vector<int>> cargar_data();
+    int menu_admin();
+    void comprar_ingred();
+    void registro_venta();
+    void registro_compra();
 
     int getA() const;
     void setA(int value);
@@ -27,6 +31,14 @@ public:
 
     void ejecutar_compra (int a, map<string, vector<int>>data);
 };
+
+
+
+
+
+
+
+
 
 
 

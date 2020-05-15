@@ -31,13 +31,20 @@ ingreso_admin::ingreso_admin()
 {
 
 }
-
+/*
+Esta función no espera ninguna variable, y se encarga de verificar que la
+cedula del usuario y la contraseña sean del administrador, la contraseña y
+la cedula están almacenadas en el archivo “sudo.txt” y corresponden a la
+primera linea del archivo respectivamente
+*/
 bool ingreso_admin::verificacion()
 {
+    cout<<endl;
+    cout<<"Para poner en marcha la aplicacion es neceario que se identifique como administrador."<<endl;
     string Cedula, Clave;
-    cout<<"Ingrese su cedula: ";
+    cout<<"Ingrese su cedula de administrador: ";
     cin>>Cedula;
-    cout<<"Ingrese su clave: ";
+    cout<<"Ingrese su clave de administrador: ";
     cin>>Clave;
     ifstream leer ("sudo.txt", ios::in);
     string cedula,clave;
@@ -51,6 +58,11 @@ bool ingreso_admin::verificacion()
         leer.close();
     }
 }
+
+/*
+Esta funcion se encarga de agragar un usuario al alchivo “sudo.txt”,
+los agrega al final del archivo
+*/
 
 void ingreso_admin::registrar()
 {
@@ -70,7 +82,18 @@ void ingreso_admin::registrar()
 }
 
 
-
+/*
+Esta funcion se encarga de imprimir un cuadro en consola, el cual
+contiene texto representando las opciones que tiene el usuario
+1.ver el menú de combos
+2 ingresar como administrador
+3: salir
+en el caso de que elija otra opccion, le reitera que
+elija una que este disponible.
+Retorna un objeto tipo “int” que representa la desicion
+del usuario
+(este cuadro es para los usuarios que ya ingresaron)
+*/
 int ingreso_admin::all_menu()
 {
     int dec;
@@ -86,29 +109,48 @@ int ingreso_admin::all_menu()
     }
 
 }
+/*
+Esta funcion se encarga de imprimir un cuadro en consola, el cual
+contiene texto representando las opciones que tiene el usuario
+1.inisiar sesion
+2 registrarse
+3: salir
+en el caso de que elija otra opccion, le reitera que
+elija una que este disponible.
+Retorna un objeto tipo “int” que representa la desicion
+del usuario
+(este cuadro es para los usuarios que no han ingresado)
+*/
 
 int ingreso_admin::prin_menu()
 {
     int dec;
     while (true){
         cout<<"------------------------------------"<<endl<<'|'<<"Por favor ingrese una opcion (1/2)|"<<endl<<"------------------------------------"<<endl;
-        cout<<"| (1): inisiar sesion              |"<<endl<<"| (2): registrarse                 |"<<endl;
+        cout<<"| (1): inisiar sesion              |"<<endl<<"| (2): registrarse                 |"<<endl<<"| (3): salir                       |"<<endl;
         cout<<"------------------------------------"<<endl;
         cin>>dec;
-        if (dec == 1 || dec == 2)
+        if (dec == 1 || dec == 2 || dec == 3)
             return dec;
         else
             cout<<"Su orden ("<<dec<<") no se encuentra en las opciones, recuerde pulsar 1 o 2."<<endl;
     }
 }
-
+/*
+Esta función se encarga de permitir que el usuario ingrese a la
+aplicación, pidiéndole que ingrese la cedula y la contraseña,
+procede a verificar su existencia y que la contraseña coincida
+con la cedula en el archivo “sudo.txt”, de ser así retorna un
+bool true, de lo contrario retorna false
+*/
 bool ingreso_admin::login()
 {
+    cout<<endl;
     ifstream leer ("sudo.txt", ios::in);
     string cedula,clave,Cedula,Clave;
-    cout<<"Ingrese su cedula: ";
+    cout<<"Ingrese su cedula para acceder: ";
     cin>>Cedula;
-    cout<<"Ingrese su celave: ";
+    cout<<"Ingrese su celave  para acceder: ";
     cin>>Clave;
 
     leer>>cedula;
@@ -125,7 +167,17 @@ bool ingreso_admin::login()
 
 }
 
+/*
+Esta funcion se encarga de imprimir un cuadro en consola, el cual
+contiene texto representando los combos disponibles para el usuario,
+un ciclo for() se encrga de imprmirlo recorriendo los archivos
+"nombres_combos.txt" y "combos.txt".
+en el caso de que elija otra opccion, le reitera que
+elija una que este disponible.
+Retorna un objeto tipo “int” que representa la desicion
+del usuario
 
+*/
 int ingreso_admin::see_combos()
 {
     vector <string> combos;
@@ -169,7 +221,15 @@ int ingreso_admin::see_combos()
 }
 
 
+/*
+esta función retorna un dato tipo map, el cual contiene como
+contraseña un dato tipo string, que corresponde al nombre del
+combo, y como clave asociada contiene un dato tipo vector<int>
+cuyas posiciones impares representan el elemento del inventario,
+y las pares representan la cantidad que necesitan de el elemento
+del inventario
 
+*/
 map<string, vector<int> > ingreso_admin::cargar_data()
 {
     int dec;
@@ -240,9 +300,37 @@ map<string, vector<int> > ingreso_admin::cargar_data()
 }
 
 
-
+/*
+esta función se encarga de realizar una compra elegida por el
+usuario, usa los archivos "ventas.txt" , "combos.txt" y
+ "nombres_combos.txt" para extraer datos  y crear
+una estructura que sigue los siguientes pasos
+1. restar los ingredientes de la compra al inventario
+2.hacer la compra
+3. cargar esta compra al archivo "ventas.txt"
+*/
 void ingreso_admin::ejecutar_compra(int a, map<string, vector<int> > data)
 {
+    ofstream registro;
+    registro.open("ventas.txt", ios::out | ios::app);
+    int num = 1,precio;
+    vector<int>precios;
+    ifstream precio_combo;
+    precio_combo.open("combos.txt",ios::in);
+    precio_combo>>precio;
+    while(!precio_combo.eof()){
+        if (num == a){
+            registro<<"venta de comobo "<<a<<": "<<precio<<endl;
+            break;
+            registro.close();
+        }
+        num++;
+        precio_combo>>precio;
+    }
+    registro.close();
+    precio_combo.close();
+
+
     ifstream name_combos;
     string combo_name;
     int many_unit,contador,c=0,not1;
@@ -262,27 +350,196 @@ void ingreso_admin::ejecutar_compra(int a, map<string, vector<int> > data)
     }
     name_combos.close();
     needs = data[cadena_combo[a-1]];
-    int unidades;
+    ofstream unitis_aux;
+    unitis_aux.open("inventario_aux.txt",ios::out);
     ifstream unitis;
     unitis.open("inventario.txt", ios::in);
     unitis>>contador;
     while(!unitis.eof()){
         unitis>>many_unit;
+        unitis>>not1;
+        unitis>>not2;
         if (contador == needs[c]){
             if ((many_unit-needs[c+1])<0){
                 cout<<"Lo sentmos, no hay suficientes ingredientes para hacer su pedido, vuelva mas tarde."<<endl;
                 return;
             }
-            if (c > needs.size())
-                return;
-        cout<<"si hay"<<endl;
+            else if (c > needs.size()){
+
+            }
+            else{
+                unitis_aux<<contador<<' '<<many_unit-needs[c+1]<<' '<<not1<<' '<<not2<<endl;
+
+            }
+
 
         }
-        unitis>>not1;
-        unitis>>not2;
+        else{
+            unitis_aux<<contador<<' '<<many_unit<<' '<<not1<<' '<<not2<<endl;}
+        unitis>>contador;
         c=c+2;
     }
 
+    unitis.close();
+    unitis_aux.close();
+    cout<<"compra realizada con exito."<<endl;
+    remove("inventario.txt");
+    rename("inventario_aux.txt","inventario.txt");
 
+}
+/*
+Esta funcion se encarga de imprimir un cuadro en consola, el cual
+es especifico para el administrador.
+contiene texto representando las opciones que tiene el administrador
+1. comprar ingredientes para el inventrio
+2. ver el registros de ventas del dia
+3. ver el registro de compras para el inventario del dia
+4. salir
+en el caso de que elija otra opccion, le reitera que
+elija una que este disponible.
+Retorna un objeto tipo “int” que representa la desicion
+del administrador
+*/
+
+int ingreso_admin::menu_admin()
+{
+    int dec;
+    while(true){
+        cout<<"__________________________________________________________"<<endl;
+        cout<<"|     Bienvenido administrador, elija una opcion          |"<<endl;
+        cout<<"----------------------------------------------------------"<<endl;
+        cout<<"| 1. comprar ingredientes para el inventrio               |"<<endl;
+        cout<<"| 2. ver el registros de ventas del dia                   |"<<endl;
+        cout<<"| 3. ver el registro de compras para el inventario del dia|"<<endl;
+        cout<<"| 4. salir                                                |"<<endl;
+        cout<<"----------------------------------------------------------"<<endl;
+        cout<<"ingrese la opcion que desa ejecutar: ";
+        cin>>dec;
+        if (dec == 1 || dec==2 || dec==3 || dec == 4)
+            return dec;
+        else
+            cout<<"la opcion ("<<dec<<") no esta en las opciones, intente de nuevo."<<endl;
+    }
+
+}
+/*
+esta función le permite al administrador comprar ingredientes para
+el inventario en caso de que ya no hallan ingredientes lo cual
+impediría que mas usuarios compren o por que simplemente
+desea comprar, agrega las unidades compradas al inventario
+y agrega la compra el archivo “compras.txt”
+*/
+void ingreso_admin::comprar_ingred()
+{
+    int dec;
+    int paquetes;
+    int precio,cant,not1;
+    float not2;
+    vector <int> cantidad_paquete;// <- la cantidad por paquete
+    vector <int> precio_paquete;// <- los precios
+    string cadena;
+    vector<string> ingredientes;
+    ifstream paquetes_precio;
+    paquetes_precio.open("paquetes_inventario.txt", ios::in);
+    paquetes_precio>>paquetes;
+    while(!paquetes_precio.eof()){
+        paquetes_precio>>precio;
+        cantidad_paquete.push_back(paquetes);// <- la cantidad por paquete
+        precio_paquete.push_back(precio);// <- los precios
+
+        paquetes_precio>>paquetes;
+    }
+
+    ifstream name_archivo;
+    name_archivo.open("nombres_inventario.txt", ios::in);
+    char name_product[30];
+    name_archivo.getline(name_product,30,'\n');
+    while(!name_archivo.eof()){
+        for(int i = 0; name_product[i] != '\0'; i++){
+            cadena+= name_product[i];
+        }
+        name_archivo.getline(name_product,30,'\n');
+        ingredientes.push_back(cadena);
+        cadena.clear();
+    }
+    name_archivo.close();
+    paquetes_precio.close();
+    cout<<"______________________________________________________________________________________________________________________________"<<endl;
+    cout<<"|                                                     LOS INGREDIENTES SON                                                    |"<<endl;
+    cout<<"------------------------------------------------------------------------------------------------------------------------------"<<endl;
+    for (int i = 0; i<ingredientes.size() ; i++){
+        cout<<"| "<<i+1<<". "<<ingredientes[i]<<", cada paquete trae "<<cantidad_paquete[i]<<" unidades y cuesta "<<precio_paquete[i]<<"$. "<<endl;
+        cout<<"-----------------------------------------------------------------------.------------------------------------------------------"<<endl;
+
+    }
+    cout<<"|ingrese la opcion del ingrediente que desee comprar: ";
+    cin>>dec;
+    cout<<"------------------------------------------------------"<<endl;
+    cout<<"Ingrese cuatos paquetes de ("<<ingredientes[dec-1]<<") desea comprar: ";
+    cin>>cant;
+
+    int num,unids;
+    ofstream actualizar_aux;
+    actualizar_aux.open("inventario_aux.txt", ios::out);
+    ifstream actualizar;
+    actualizar.open("inventario.txt",ios::in);
+    actualizar>>num;
+    while(!actualizar.eof()){
+        actualizar>>unids;
+        actualizar>>not1;
+        actualizar>>not2;
+        if (num == dec){
+            actualizar_aux<<num<<' '<<unids + (cant*cantidad_paquete[dec-1])<<' '<<not1<<' '<<not2<<endl;
+        }
+        else{
+            actualizar_aux<<num<<' '<<unids <<' '<<not1<<' '<<not2<<endl;
+        }
+    actualizar>>num;
+    }
+    remove("inventario.txt");
+    rename("inventario_aux.txt","inventario.txt");
+    actualizar.close();
+    actualizar_aux.close();
+
+    ofstream compras;
+    compras.open("compras.txt", ios::out | ios::app);
+    compras<<"se compro "<<cant<<" paquetes de "<<ingredientes[dec-1]<<" por un valor de: "<<(precio_paquete[dec-1])*cant<<endl;
+    compras.close();
+}
+/*
+esta función imprime el historial de ventas de el archivo "ventas.txt" si
+el administrador lo desea
+*/
+void ingreso_admin::registro_venta()
+{
+    ifstream ver;
+    int c=1;
+    ver.open("ventas.txt",ios::in);
+    char texto[100];
+    ver.getline(texto,100,'\n');
+    while(!ver.eof()){
+        cout<<"| "<<c<<" : "<<texto<<endl;
+        ver.getline(texto,100,'\n');
+        c++;
+    }
+
+}
+
+/*
+esta función imprime el historial de compras de el archivo "compras.txt" si
+el administrador lo desea
+*/
+void ingreso_admin::registro_compra()
+{
+    ifstream ver;
+    int c=1;
+    ver.open("compras.txt",ios::in);
+    char texto[100];
+    ver.getline(texto,100,'\n');
+    while(!ver.eof()){
+        cout<<"| "<<c<<" : "<<texto<<endl;
+        ver.getline(texto,100,'\n');
+        c++;
+    }
 
 }
