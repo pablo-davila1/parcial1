@@ -1,1 +1,3 @@
 se compro 2 paquetes de Pan para perro por un valor de: 37100
+se compro 2 paquetes de Carne para hamburguesa por un valor de: 92400
+

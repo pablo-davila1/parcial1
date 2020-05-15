@@ -1,0 +1,5 @@
+venta de comobo 2: 17900
+venta de comobo 1: 35000
+venta de comobo 1: 35000
+venta de comobo 2: 17900
+venta de comobo 3: 16500
